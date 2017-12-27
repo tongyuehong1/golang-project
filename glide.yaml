@@ -1,0 +1,4 @@
+package: github.com/tongyuehong1/golang-project
+import:
+- package: github.com/astaxie/beego
+  version: v1.9.2
