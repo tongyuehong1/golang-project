@@ -1,15 +1,43 @@
 package logger
 
-type LogReporterInterface interface {
-	ReportError(error)
+import (
+	"fmt"
+	"log"
+
+	"go.uber.org/zap"
+)
+
+type RecordLog struct{}
+
+var (
+	Logger *RecordLog
+	zapLog *zap.Logger
+)
+
+func init() {
+	Logger = &RecordLog{}
+	zapLog, _ = zap.NewDevelopment()
 }
 
-type LogReport struct {
-	provider LogReporterInterface
+func (l *RecordLog) Error(desc string, err error) {
+	zapLog.Error(desc, zap.Error(err))
 }
 
-var GlobalLogReporter *LogReport
+func (l *RecordLog) Debug(format string, a ...interface{}) {
+	info := fmt.Sprintf(format, a)
+	zapLog.Debug(info, zap.Skip())
+}
 
-func (manager *LogReport) Error(err error) {
-	manager.provider.ReportError(err)
+func (l *RecordLog) Fatal(v ...interface{}) {
+	log.Fatal(v)
+}
+
+func (l *RecordLog) Info(format string, a ...interface{}) {
+	info := fmt.Sprintf(format, a)
+	zapLog.Info(info, zap.Skip())
+}
+
+func (l *RecordLog) Warn(format string, a ...interface{}) {
+	warn := fmt.Sprintf(format, a)
+	zapLog.Warn(warn, zap.Skip())
 }

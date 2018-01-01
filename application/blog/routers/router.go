@@ -6,5 +6,10 @@ import (
 )
 
 func init() {
-	beego.Router("/insert", &controllers.ArticleController{}, "post:Insert")
+	beego.Router("/blog/insert", &controllers.ArticleController{}, "post:Insert")
+	beego.Router("/blog/title/update", &controllers.ArticleController{}, "post:UpdateTitle")
+	beego.Router("/blog/brief/update", &controllers.ArticleController{}, "post:UpdateBrief")
+	beego.Router("/blog/article/update", &controllers.ArticleController{}, "post:UpdateArticle")
+	beego.Router("/blog/delete", &controllers.ArticleController{}, "post:Delete")
+
 }

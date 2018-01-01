@@ -6,6 +6,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql" // import your used driver
 	"fmt"
+	"github.com/tongyuehong1/golang-project/application/blog/common"
 )
 
 func init() {
@@ -48,28 +49,58 @@ func (this *ArticleServiceProvider) Insert(article Article) error {
 	return err
 }
 
-func (this *ArticleServiceProvider) Update(title string, article string) error {
+func (this *ArticleServiceProvider) UpdateArticle(title string, article string) error {
 	o := orm.NewOrm()
-	sql := "UPDATE article SET Article=? WHERE Title=? AND Status=? LIMIT 1"
+	sql := "UPDATE article.article SET article=? WHERE Title=? AND status=? LIMIT 1"
 	values := []interface{}{article, title, true}
 	raw := o.Raw(sql, values)
-	_, err := raw.Exec()
+	result, err := raw.Exec()
+	if row, _ := result.RowsAffected(); row == 0 && err == nil {
+		return common.ErrNotFound
+	}
+
+	return err
+}
+func (this *ArticleServiceProvider) UpdateTitle(title string, changetitle string) error {
+	o := orm.NewOrm()
+	sql := "UPDATE article.article SET title=? WHERE title=? AND status=? LIMIT 1"
+	values := []interface{}{changetitle, title, true}
+	raw := o.Raw(sql, values)
+	result, err := raw.Exec()
+	if err == nil {
+		if row, _ := result.RowsAffected(); row == 0  {
+			return common.ErrNotFound
+		}
+	}
+
+	return err
+}
+func (this *ArticleServiceProvider) UpdateBrief(title string, brief string) error {
+	o := orm.NewOrm()
+	sql := "UPDATE article.article SET brief=? WHERE title=? AND status=? LIMIT 1"
+	values := []interface{}{brief, title, true}
+	raw := o.Raw(sql, values)
+	result, err := raw.Exec()
+	if row, _ := result.RowsAffected(); row == 0 && err == nil {
+		return common.ErrNotFound
+	}
 
 	return err
 }
 
 func (this *ArticleServiceProvider) Delete(title string) error {
 	o := orm.NewOrm()
-	sql := "UPDATE Article SET Status=? WHERE Title=? LIMIT 1"
+	sql := "UPDATE Article SET status=? WHERE title=? LIMIT 1"
 	values := []interface{}{false, title}
 	raw := o.Raw(sql, values)
-	_, err := raw.Exec()
+	result, err := raw.Exec()
+	if row, _ := result.RowsAffected(); row == 0 && err == nil {
+		return common.ErrNotFound
+	}
 
 	return err
 }
 
-//func (this *ArticleServiceProvider) Get() {
+//func (this *ArticleServiceProvider) Get(title string) (int64, error) {
 //	o := orm.NewOrm()
-//	err := o.Raw("SELECT * WHERE STATUS = false LIMIT 1 LOCK IN SHARE MODE")
-//	return
 //}
