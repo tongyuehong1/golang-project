@@ -1,9 +1,8 @@
 package common
 
-const(
+const (
 	RespKeyStatus = "status"
 	RespKeyData   = "data"
-
 
 	DBArticle = "article"
 )

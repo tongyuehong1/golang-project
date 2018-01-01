@@ -3,10 +3,10 @@ package main
 import (
 	_ "github.com/tongyuehong1/golang-project/application/blog/routers"
 	"github.com/astaxie/beego"
-	"github.com/tongyuehong1/golang-project/application/blog/controllers"
+	mysql "github.com/tongyuehong1/golang-project/application/blog/init"
 )
 
 func main() {
-	beego.Router("/insert", &controllers.ArticleController{}, "post: Insert")
+	mysql.InitSql()
+	beego.Run()
 }
-

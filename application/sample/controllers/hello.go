@@ -8,6 +8,7 @@ import (
 type Sample struct {
 	beego.Controller
 }
+
 func (o *Sample) Hello() {
 	o.Data["json"] = map[string]string{"content": models.Hello()}
 	o.ServeJSON()

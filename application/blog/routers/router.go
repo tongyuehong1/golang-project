@@ -1,10 +1,10 @@
 package routers
 
 import (
-	"github.com/tongyuehong1/golang-project/application/blog/controllers"
 	"github.com/astaxie/beego"
+	"github.com/tongyuehong1/golang-project/application/blog/controllers"
 )
 
 func init() {
-    beego.Router("/", &controllers.MainController{})
+	beego.Router("/insert", &controllers.ArticleController{}, "post:Insert")
 }
