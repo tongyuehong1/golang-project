@@ -5,4 +5,6 @@ const (
 	RespKeyData   = "data"
 
 	DBArticle = "article"
+
+	SessionUserID = "userId"
 )

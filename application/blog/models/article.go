@@ -3,10 +3,11 @@ package models
 import (
 	"time"
 
+	"fmt"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql" // import your used driver
-	"fmt"
 	"github.com/tongyuehong1/golang-project/application/blog/common"
+	//"database/sql"
 )
 
 func init() {
@@ -21,7 +22,16 @@ type Article struct {
 	Id      int
 	Classes string
 	Title   string
-	Created    time.Time
+	Created time.Time
+	Brief   string
+	Article string
+	Status  bool
+}
+type Show struct {
+	Id      int
+	Classes string
+	Title   string
+	Created time.Time
 	Brief   string
 	Article string
 	Status  bool
@@ -55,8 +65,10 @@ func (this *ArticleServiceProvider) UpdateArticle(title string, article string) 
 	values := []interface{}{article, title, true}
 	raw := o.Raw(sql, values)
 	result, err := raw.Exec()
-	if row, _ := result.RowsAffected(); row == 0 && err == nil {
-		return common.ErrNotFound
+	if err == nil {
+		if row, _ := result.RowsAffected(); row == 0 {
+			return common.ErrNotFound
+		}
 	}
 
 	return err
@@ -68,7 +80,7 @@ func (this *ArticleServiceProvider) UpdateTitle(title string, changetitle string
 	raw := o.Raw(sql, values)
 	result, err := raw.Exec()
 	if err == nil {
-		if row, _ := result.RowsAffected(); row == 0  {
+		if row, _ := result.RowsAffected(); row == 0 {
 			return common.ErrNotFound
 		}
 	}
@@ -81,8 +93,10 @@ func (this *ArticleServiceProvider) UpdateBrief(title string, brief string) erro
 	values := []interface{}{brief, title, true}
 	raw := o.Raw(sql, values)
 	result, err := raw.Exec()
-	if row, _ := result.RowsAffected(); row == 0 && err == nil {
-		return common.ErrNotFound
+	if err == nil {
+		if row, _ := result.RowsAffected(); row == 0 {
+			return common.ErrNotFound
+		}
 	}
 
 	return err
@@ -94,13 +108,18 @@ func (this *ArticleServiceProvider) Delete(title string) error {
 	values := []interface{}{false, title}
 	raw := o.Raw(sql, values)
 	result, err := raw.Exec()
-	if row, _ := result.RowsAffected(); row == 0 && err == nil {
-		return common.ErrNotFound
+	if err == nil {
+		if row, _ := result.RowsAffected(); row == 0 {
+			return common.ErrNotFound
+		}
 	}
 
 	return err
 }
 
-//func (this *ArticleServiceProvider) Get(title string) (int64, error) {
-//	o := orm.NewOrm()
-//}
+func (this *ArticleServiceProvider) Get(classes string) ([]Show, error) {
+	var show []Show
+	o := orm.NewOrm()
+	_, err := o.Raw("SELECT * FROM article.article WHERE classes=? AND status=?", classes, true).QueryRows(&show)
+	return show, err
+}

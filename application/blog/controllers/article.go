@@ -8,7 +8,6 @@ import (
 	"github.com/tongyuehong1/golang-project/application/blog/common"
 	"github.com/tongyuehong1/golang-project/application/blog/models"
 	"github.com/tongyuehong1/golang-project/libs/logger"
-	"fmt"
 )
 
 type ArticleController struct {
@@ -62,22 +61,25 @@ func (this *ArticleController) UpdateTitle() {
 	this.ServeJSON()
 }
 func (this *ArticleController) UpdateArticle() {
-	var title struct {
-		title         string
+	var Title struct {
+		Title         string
 		ChangeArticle string
 	}
-	err := json.Unmarshal(this.Ctx.Input.RequestBody, &title)
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &Title)
 	if err != nil {
 		logger.Logger.Error("Unmarshal ", err)
 		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
 	} else {
-		err := models.ArticleServer.UpdateArticle(title.title, title.ChangeArticle)
+		err := models.ArticleServer.UpdateArticle(Title.Title, Title.ChangeArticle)
 		if err != nil {
-			logger.Logger.Error("UpdateArticle ", err)
+			if err == common.ErrNotFound {
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlNotFound}
+			} else {
+				logger.Logger.Error("UpdateArticle ", err)
 
-			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+			}
 		} else {
-
 			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
 		}
 	}
@@ -85,22 +87,25 @@ func (this *ArticleController) UpdateArticle() {
 	this.ServeJSON()
 }
 func (this *ArticleController) UpdateBrief() {
-	var title struct {
-		title       string
-		changebrief string
+	var Title struct {
+		Title       string
+		ChangeBrief string
 	}
-	err := json.Unmarshal(this.Ctx.Input.RequestBody, &title)
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &Title)
 	if err != nil {
 		logger.Logger.Error("Unmarshal ", err)
 		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
 	} else {
-		err := models.ArticleServer.UpdateBrief(title.title, title.changebrief)
+		err := models.ArticleServer.UpdateBrief(Title.Title, Title.ChangeBrief)
 		if err != nil {
-			logger.Logger.Error("Updatebrief ", err)
+			if err == common.ErrNotFound {
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlNotFound}
+			} else {
+				logger.Logger.Error("UpdateArticle ", err)
 
-			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+			}
 		} else {
-
 			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
 		}
 	}
@@ -109,23 +114,50 @@ func (this *ArticleController) UpdateBrief() {
 }
 
 func (this *ArticleController) Delete() {
-	var title struct {
-		title string
+	var Title struct {
+		Title string
 	}
-	err := json.Unmarshal(this.Ctx.Input.RequestBody, &title)
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &Title)
 	if err != nil {
 		logger.Logger.Error("Unmarshal ", err)
 		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
 	} else {
-		err := models.ArticleServer.Delete(title.title)
+		err := models.ArticleServer.Delete(Title.Title)
 		if err != nil {
-			fmt.Println("ArticleServer.Delete err:", err)
-			logger.Logger.Error("delete ", err)
+			if err == common.ErrNotFound {
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlNotFound}
+			} else {
+				logger.Logger.Error("Delete ", err)
 
-			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+			}
 		} else {
-
 			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
+		}
+	}
+
+	this.ServeJSON()
+}
+func (this *ArticleController) Get() {
+	var Classes struct {
+		Classes string
+	}
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &Classes)
+	if err != nil {
+		logger.Logger.Error("Unmarshal ", err)
+		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
+	} else {
+		show, err := models.ArticleServer.Get(Classes.Classes)
+		if err != nil {
+			if err == common.ErrNotFound {
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlNotFound}
+			} else {
+				logger.Logger.Error("Get ", err)
+
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+			}
+		} else {
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed, common.RespKeyData: show}
 		}
 	}
 
