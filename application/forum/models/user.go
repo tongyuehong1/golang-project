@@ -1,0 +1,51 @@
+package models
+
+import (
+	"github.com/astaxie/beego/orm"
+	"github.com/tongyuehong1/golang-project/application/blog/utility"
+)
+
+func init() {
+	orm.RegisterModel(new(User))
+}
+
+type UserServiceProvider struct {
+}
+
+var UserServer *UserServiceProvider
+
+type User struct {
+	ID    uint64 `orm:"column(id);pk"  json:"id"`
+	Name  string `orm:"column(name)"   json:"name"`
+	Pass  string `orm:"column(pass)"   json:"pass"`
+	Phone string `orm:"column(phone)"  json:"phone"`
+}
+
+func (this *UserServiceProvider) Create(user User) error {
+	o := orm.NewOrm()
+	hash, err := utility.GenerateHash(user.Pass)
+
+	if err != nil {
+		return err
+	}
+	password := string(hash)
+	o.Using("User")
+	newuser := new(User)
+	newuser.Name = user.Name
+	newuser.Pass = password
+	newuser.Phone = user.Phone
+	_, err = o.Insert(newuser)
+	return err
+}
+func (this *UserServiceProvider) Login(name string, pass string) (bool, error) {
+	o := orm.NewOrm()
+	o.Using("User")
+	user := User{Name: name}
+	err := o.Read(&user,"name")
+	if err != nil {
+		return false, err
+	} else if !utility.CompareHash([]byte(user.Pass), pass) {
+		return false, err
+	}
+	return true, nil
+}
