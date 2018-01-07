@@ -19,13 +19,13 @@ func (this *Article) TableName() string {
 }
 
 type Article struct {
-	Id      int
-	Classes string
-	Title   string
-	Created time.Time
-	Brief   string
-	Article string
-	Status  bool
+	Id      int       `orm:"column(id);pk"  json:"id"`
+	Classes string    `orm:"column(classes)"  json:"classes"`
+	Title   string    `orm:"column(title)"  json:"title"`
+	Created time.Time `orm:"column(created)"  json:"created"`
+	Brief   string    `orm:"column(brief)"  json:"brief"`
+	Article string    `orm:"column(article)"  json:"article"`
+	Status  bool      `orm:"column(status)"  json:"status"`
 }
 type Show struct {
 	Id      int
@@ -49,13 +49,6 @@ func (this *ArticleServiceProvider) Insert(article Article) error {
 	values := []interface{}{article.Classes, article.Title, article.Brief, article.Article, article.Status}
 	raw := o.Raw(sql, values)
 	_, err := raw.Exec()
-	fmt.Println("err:", err)
-	//fmt.Println("sdfg")
-	//o.Using("article")
-	//fmt.Println(o.Driver())
-	//_, err := o.Insert(&article)
-	//fmt.Println("err:", err)
-
 	return err
 }
 
