@@ -27,6 +27,7 @@ type Article struct {
 	Article string    `orm:"column(article)"  json:"article"`
 	Status  bool      `orm:"column(status)"  json:"status"`
 }
+
 type Show struct {
 	Id      int
 	Classes string
@@ -36,6 +37,7 @@ type Show struct {
 	Article string
 	Status  bool
 }
+
 type ArticleServiceProvider struct {
 }
 
@@ -66,6 +68,7 @@ func (this *ArticleServiceProvider) UpdateArticle(title string, article string) 
 
 	return err
 }
+
 func (this *ArticleServiceProvider) UpdateTitle(title string, changetitle string) error {
 	o := orm.NewOrm()
 	sql := "UPDATE article.article SET title=? WHERE title=? AND status=? LIMIT 1"
@@ -80,6 +83,7 @@ func (this *ArticleServiceProvider) UpdateTitle(title string, changetitle string
 
 	return err
 }
+
 func (this *ArticleServiceProvider) UpdateBrief(title string, brief string) error {
 	o := orm.NewOrm()
 	sql := "UPDATE article.article SET brief=? WHERE title=? AND status=? LIMIT 1"

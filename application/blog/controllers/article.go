@@ -34,6 +34,7 @@ func (this *ArticleController) Insert() {
 
 	this.ServeJSON()
 }
+
 func (this *ArticleController) UpdateTitle() {
 	var Title struct {
 		Title       string
@@ -60,6 +61,7 @@ func (this *ArticleController) UpdateTitle() {
 
 	this.ServeJSON()
 }
+
 func (this *ArticleController) UpdateArticle() {
 	var Title struct {
 		Title         string
@@ -86,6 +88,7 @@ func (this *ArticleController) UpdateArticle() {
 
 	this.ServeJSON()
 }
+
 func (this *ArticleController) UpdateBrief() {
 	var Title struct {
 		Title       string
@@ -138,6 +141,7 @@ func (this *ArticleController) Delete() {
 
 	this.ServeJSON()
 }
+
 func (this *ArticleController) Get() {
 	var Classes struct {
 		Classes string
