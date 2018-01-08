@@ -34,9 +34,10 @@ func (this *UserServiceProvider) Create(user User) error {
 	newuser.Name = user.Name
 	newuser.Pass = password
 	newuser.Phone = user.Phone
-	_, err = o.Insert(newuser)
-	return err
+	_, error := o.Insert(&newuser)
+	return error
 }
+
 func (this *UserServiceProvider) Login(name string, pass string) (bool, error) {
 	o := orm.NewOrm()
 	o.Using("User")
