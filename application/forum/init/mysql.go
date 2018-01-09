@@ -3,7 +3,7 @@ package init
 import (
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
-	. "github.com/tongyuehong1/golang-project/application/blog/common"
+	. "github.com/tongyuehong1/golang-project/application/forum/common"
 )
 
 func InitSql() {

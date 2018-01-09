@@ -15,10 +15,10 @@ type UserServiceProvider struct {
 var UserServer *UserServiceProvider
 
 type User struct {
-	ID    uint64 `orm:"column(id);pk"  json:"id"`
-	Name  string `orm:"column(name)"   json:"name"`
-	Pass  string `orm:"column(pass)"   json:"pass"`
-	Phone string `orm:"column(phone)"  json:"phone"`
+	UserId    uint64 `orm:"column(id);pk"  json:"id"`
+	Name  	  string `orm:"column(name)"   json:"name"`
+	Pass      string `orm:"column(pass)"   json:"pass"`
+	Phone     string `orm:"column(phone)"  json:"phone"`
 }
 
 func (this *UserServiceProvider) Create(user User) error {

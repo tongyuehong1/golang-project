@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-	"github.com/tongyuehong1/golang-project/application/blog/common"
+	"github.com/tongyuehong1/golang-project/application/forum/common"
 	"github.com/tongyuehong1/golang-project/application/forum/models"
 	"github.com/tongyuehong1/golang-project/libs/logger"
 )
@@ -50,10 +50,10 @@ func (this *UserController) Login() {
 
 		if err != nil {
 			if err == orm.ErrNoRows {
-				logger.Logger.Error("UserServer.Login",err)
+				logger.Logger.Error("UserServer.Login", err)
 				this.Data["JSON"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidUser}
 			} else {
-				logger.Logger.Error("UserServer.Login",err)
+				logger.Logger.Error("UserServer.Login", err)
 				this.Data["JSON"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
 			}
 		} else {

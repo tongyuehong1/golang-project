@@ -44,7 +44,6 @@ type ArticleServiceProvider struct {
 var ArticleServer *ArticleServiceProvider
 
 func (this *ArticleServiceProvider) Insert(article Article) error {
-	fmt.Println("a:", article)
 	o := orm.NewOrm()
 	article.Created = time.Now()
 	sql := "INSERT INTO article.article(classes,title,brief,article,status) VALUES(?,?,?,?,?)"
