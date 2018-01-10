@@ -15,10 +15,10 @@ type UserServiceProvider struct {
 var UserServer *UserServiceProvider
 
 type User struct {
-	UserId    uint64 `orm:"column(id);pk"  json:"id"`
-	Name  	  string `orm:"column(name)"   json:"name"`
-	Pass      string `orm:"column(pass)"   json:"pass"`
-	Phone     string `orm:"column(phone)"  json:"phone"`
+	UserId uint64 `orm:"column(id);pk"  json:"id"`
+	Name   string `orm:"column(name)"   json:"name"`
+	Pass   string `orm:"column(pass)"   json:"pass"`
+	Phone  string `orm:"column(phone)"  json:"phone"`
 }
 
 func (this *UserServiceProvider) Create(user User) error {
@@ -42,7 +42,7 @@ func (this *UserServiceProvider) Login(name string, pass string) (bool, error) {
 	o := orm.NewOrm()
 	o.Using("User")
 	user := User{Name: name}
-	err := o.Read(&user,"name")
+	err := o.Read(&user, "name")
 	if err != nil {
 		return false, err
 	} else if !utility.CompareHash([]byte(user.Pass), pass) {

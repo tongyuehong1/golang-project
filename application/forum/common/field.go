@@ -12,4 +12,6 @@ const (
 	RemovedArticle   = 1
 	RecommendArticle = 2
 
+	NormalComment  = 0
+	RemovedComment = 1
 )

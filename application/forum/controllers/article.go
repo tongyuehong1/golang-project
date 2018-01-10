@@ -1,11 +1,11 @@
 package controllers
 
 import (
-	"github.com/astaxie/beego"
 	"encoding/json"
+	"github.com/astaxie/beego"
+	"github.com/tongyuehong1/golang-project/application/forum/common"
 	"github.com/tongyuehong1/golang-project/application/forum/models"
 	"github.com/tongyuehong1/golang-project/libs/logger"
-	"github.com/tongyuehong1/golang-project/application/forum/common"
 )
 
 type ArticleController struct {
@@ -29,6 +29,76 @@ func (this *ArticleController) Insert() {
 			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
 		}
 	}
+
+	this.ServeJSON()
+}
+func (this *ArticleController) Change() {
+	article := models.Article{}
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &article)
+	if err != nil {
+		logger.Logger.Error("Unmarshal ", err)
+		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
+	} else {
+		err := models.ArticleServer.Change(article)
+		if err != nil {
+			logger.Logger.Error("Change ", err)
+
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+		} else {
+
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
+		}
+	}
+
+	this.ServeJSON()
+}
+func (this *ArticleController) Recommend() {
+	var Title struct {
+		Title string
+	}
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &Title)
+	if err != nil {
+		logger.Logger.Error("Unmarshal ", err)
+		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
+	} else {
+		err := models.ArticleServer.Recommend(Title.Title)
+		if err != nil {
+			logger.Logger.Error("Recommend ", err)
+
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+		} else {
+
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
+		}
+	}
+
+	this.ServeJSON()
+}
+func (this *ArticleController) GetArticle() {
+	var Category struct {
+		Category string
+	}
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &Category)
+	if err != nil {
+		logger.Logger.Error("Unmarshal ", err)
+		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
+	} else {
+		show, err := models.ArticleServer.GetArticle(Category.Category)
+		if err != nil {
+			logger.Logger.Error("GetArticle ", err)
+
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+		} else {
+
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed, common.RespKeyData: show}
+		}
+	}
+
+	this.ServeJSON()
+}
+func (this *ArticleController) AllArticle() {
+	show, _ := models.ArticleServer.AllArticle()
+	this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed, common.RespKeyData: show}
 
 	this.ServeJSON()
 }

@@ -1,8 +1,11 @@
 package models
 
 import (
-	"github.com/astaxie/beego/orm"
 	"time"
+
+	"github.com/astaxie/beego/orm"
+	"github.com/tongyuehong1/golang-project/application/forum/common"
+	"github.com/tongyuehong1/golang-project/libs/logger"
 )
 
 func init() {
@@ -15,12 +18,12 @@ type CommentServiceProvider struct {
 var CommentServer *CommentServiceProvider
 
 type Comment struct {
-	CommentId uint64	`orm:"column(id);pk"`
-	UserId    uint64
-	ArticleId uint64    `orm:"column(articleId)"`
-	Comment   string	`orm:"column(comment)"`
-	Created   time.Time
-	Status    uint8
+	CommentId uint64    `orm:"column(id);pk"      json:"id"`
+	UserId    uint64    `orm:"column(userId)"     json:"userId"`
+	ArtTitle  string    `orm:"column(artTitle)"   json:"artTitle"`
+	Comment   string    `orm:"column(comment)"    json:"comment"`
+	Created   time.Time `orm:"column(created)"    json:"created"`
+	Status    uint8     `orm:"column(status)"     json:"status"`
 }
 type ShowComment struct {
 	Comment  []Comment
@@ -28,11 +31,11 @@ type ShowComment struct {
 }
 
 // 添加评论
-func (this *CommentServiceProvider) Comment(userId, articleId uint64, comment string) error {
+func (this *CommentServiceProvider) Comment(comment Comment) error {
 	o := orm.NewOrm()
-
-	sql := "INSERT INTO forum.comment(id, articleId, comment) VALUES(?,?,?)"
-	values := []interface{}{userId, articleId, comment}
+	comment.Created = time.Now()
+	sql := "INSERT INTO forum.comment(id, userId, artTitle, comment, created, status) VALUES(?,?,?,?,?,?)"
+	values := []interface{}{comment.CommentId, comment.UserId, comment.ArtTitle, comment.Comment, comment.Created, common.NormalComment}
 	raw := o.Raw(sql, values)
 	_, err := raw.Exec()
 
@@ -40,18 +43,18 @@ func (this *CommentServiceProvider) Comment(userId, articleId uint64, comment st
 }
 
 // 获取评论
-func (this *CommentServiceProvider) GetComment(ArticleId uint64) (ShowComment, error) {
+func (this *CommentServiceProvider) GetComment(artTitle string) (ShowComment, error) {
 	o := orm.NewOrm()
 	var show ShowComment
 
-	_, err := o.Raw("SELECT * FROM forum.comment WHERE articleId=?, ArticleId").QueryRows(&show.Comment)
+	_, err := o.Raw("SELECT * FROM forum.comment WHERE artTitle=?", artTitle).QueryRows(&show.Comment)
 	if err != nil {
 		return show, err
 	}
 	for _, comment := range show.Comment {
 		userName, err := CommentServer.GetUserName(comment.UserId)
 		if err != nil {
-			return show, err
+			logger.Logger.Error("ERROR:", err)
 		}
 		show.UserName = append(show.UserName, userName)
 	}
