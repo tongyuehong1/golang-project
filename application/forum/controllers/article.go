@@ -102,3 +102,28 @@ func (this *ArticleController) AllArticle() {
 
 	this.ServeJSON()
 }
+
+// 收藏文章
+//func (this *ArticleController) Collection() {
+//	var User struct {
+//		User string
+//	}
+//	err := json.Unmarshal(this.Ctx.Input.RequestBody, &User)
+//	if err != nil {
+//		logger.Logger.Error("Unmarshal ", err)
+//		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
+//	} else {
+//		id, err := models.ArticleServer.Collect(User.User)
+//		if err != nil {
+//			logger.Logger.Error("GetArticle ", err)
+//
+//			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+//		} else {
+//
+//			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed, common.RespKeyData: show}
+//		}
+//	}
+//
+//	this.ServeJSON()
+//
+//}

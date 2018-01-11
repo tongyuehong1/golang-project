@@ -21,6 +21,13 @@ type User struct {
 	Phone  string `orm:"column(phone)"  json:"phone"`
 }
 
+// 用户相关信息
+type UserExtraInfo struct {
+	UserID uint64	`orm:"column(userid);pk"  json:"userid"`
+	Key    string
+	Value  string
+}
+
 func (this *UserServiceProvider) Create(user User) error {
 	o := orm.NewOrm()
 	hash, err := utility.GenerateHash(user.Pass)

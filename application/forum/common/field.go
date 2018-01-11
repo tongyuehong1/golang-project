@@ -14,4 +14,8 @@ const (
 
 	NormalComment  = 0
 	RemovedComment = 1
+
+	// user常用Key值
+	KeyCollection = "collection"
+
 )

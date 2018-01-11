@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/astaxie/beego/orm"
 	"github.com/tongyuehong1/golang-project/application/forum/common"
+	"strconv"
 	"time"
 )
 
@@ -15,6 +16,7 @@ type ArticleServiceProvider struct {
 
 var ArticleServer *ArticleServiceProvider
 
+// 文章基本信息
 type Article struct {
 	ArticleId uint64    `orm:"column(id);pk"         json:"id"`
 	Title     string    `orm:"column(title)"         json:"title"`
@@ -25,6 +27,8 @@ type Article struct {
 	Brief     string    `orm:"column(brief)"         json:"brief"`
 	Status    uint8     `orm:"column(status)"        json:"status"`
 }
+
+// 文章基本信息显示
 type ShowArticle struct {
 	ArticleId uint64    `orm:"column(id);pk"         json:"id"`
 	Title     string    `orm:"column(title)"         json:"title"`
@@ -36,6 +40,14 @@ type ShowArticle struct {
 	Status    uint8     `orm:"column(status)"        json:"status"`
 }
 
+// 文章其他信息（点赞，收藏）
+type ArticleExtraInfo struct {
+	Title string
+	Key   string
+	Value string
+}
+
+// 添加文章
 func (this *ArticleServiceProvider) Insert(article Article) error {
 	o := orm.NewOrm()
 	article.Created = time.Now()
@@ -46,6 +58,7 @@ func (this *ArticleServiceProvider) Insert(article Article) error {
 	return err
 }
 
+// 修改文章
 func (this *ArticleServiceProvider) Change(article Article) error {
 	o := orm.NewOrm()
 	sql := "UPDATE forum.article SET title=?,category=?,content=?,author=?,created=?,brief=?,status=? WHERE id=? LIMIT 1"
@@ -55,6 +68,7 @@ func (this *ArticleServiceProvider) Change(article Article) error {
 	return err
 }
 
+// 推荐文章
 func (this *ArticleServiceProvider) Recommend(title string) error {
 	o := orm.NewOrm()
 	sql := "UPDATE forum.article SET status=? WHERE id=? LIMIT 1"
@@ -64,6 +78,7 @@ func (this *ArticleServiceProvider) Recommend(title string) error {
 	return err
 }
 
+// 根据类别获取文章
 func (this *ArticleServiceProvider) GetArticle(category string) ([]ShowArticle, error) {
 	var showarticle []ShowArticle
 	o := orm.NewOrm()
@@ -71,6 +86,7 @@ func (this *ArticleServiceProvider) GetArticle(category string) ([]ShowArticle, 
 	return showarticle, err
 }
 
+// 获取所有文章
 func (this *ArticleServiceProvider) AllArticle() ([]ShowArticle, error) {
 	var showarticle []ShowArticle
 	o := orm.NewOrm()
@@ -78,6 +94,7 @@ func (this *ArticleServiceProvider) AllArticle() ([]ShowArticle, error) {
 	return showarticle, err
 }
 
+// 删除文章
 func (this *ArticleServiceProvider) DeleteArticle(title string) error {
 	o := orm.NewOrm()
 	sql := "UPDATE forum.article SET status=? WHERE title=? LIMIT 1"
@@ -91,4 +108,61 @@ func (this *ArticleServiceProvider) DeleteArticle(title string) error {
 	}
 
 	return err
+}
+
+// 收藏文章（取消收藏）
+func (this *ArticleServiceProvider) Collect(title string, userId uint64) error {
+	o := orm.NewOrm()
+	var value string
+
+	err := o.Raw("SELECT value FROM forum.userextra WHERE userId=? AND `key`=? AND value=? LIMIT 1 LOCK IN SHARE MODE", userId, common.KeyCollection, title).QueryRow(&value)
+
+	if err == orm.ErrNoRows {
+		// 未收藏，开始收藏
+		sql := "INSERT INTO forum.userextra(userid,`key`,value)VALUES(?,?,?)"
+		values := []interface{}{userId, common.KeyCollection, title}
+		raw := o.Raw(sql, values)
+		_, err := raw.Exec()
+
+		return err
+	} else if err == nil {
+		// 已经收藏，取消收藏
+		sql := "DELETE FROM forum.userextra WHERE value=? AND userid=? AND `key`=? LIMIT 1"
+		values := []interface{}{userId, common.KeyCollection, title}
+		raw := o.Raw(sql, values)
+		_, err := raw.Exec()
+
+		return err
+	}
+	return err
+}
+
+// 显示收藏文章
+func (this *ArticleServiceProvider) ShowCollection(userId uint64) ([]Article, error) {
+	o := orm.NewOrm()
+	var articles []Article
+	var collection []string
+	_, err := o.Raw("SELECT value FROM forum.userextra WHERE `key`=? AND userId=?", common.KeyCollection, userId).QueryRows(&collection)
+
+	if err != nil {
+		return articles, err
+	}
+	for _, articleid := range collection {
+		article := Article{}
+
+		articleId, err := strconv.ParseUint(articleid, 10, 64)
+
+		if err != nil {
+			return articles, err
+		}
+
+		err = o.Raw("SELECT * FROM mall.ware WHERE id=? LIMIT 1 LOCK IN SHARE MODE", articleId).QueryRow(&article)
+
+		if err != nil {
+			return articles, err
+		}
+		articles = append(articles, article)
+	}
+
+	return articles, nil
 }

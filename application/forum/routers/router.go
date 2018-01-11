@@ -17,5 +17,4 @@ func init() {
 
 	beego.Router("/comment/insert", &controllers.CommentController{}, "post:Insert")
 	beego.Router("/comment/getcomment", &controllers.CommentController{}, "post:GetComment")
-
 }
