@@ -104,26 +104,60 @@ func (this *ArticleController) AllArticle() {
 }
 
 // 收藏文章
-//func (this *ArticleController) Collection() {
-//	var User struct {
-//		User string
-//	}
-//	err := json.Unmarshal(this.Ctx.Input.RequestBody, &User)
-//	if err != nil {
-//		logger.Logger.Error("Unmarshal ", err)
-//		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
-//	} else {
-//		id, err := models.ArticleServer.Collect(User.User)
-//		if err != nil {
-//			logger.Logger.Error("GetArticle ", err)
-//
-//			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
-//		} else {
-//
-//			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed, common.RespKeyData: show}
-//		}
-//	}
-//
-//	this.ServeJSON()
-//
-//}
+func (this *ArticleController) Collect() {
+	var User struct {
+		User  string
+		Title string
+	}
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &User)
+	if err != nil {
+		logger.Logger.Error("Unmarshal ", err)
+		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
+	} else {
+		userId, err := models.UserServer.GetUserId(User.User)
+		if err != nil {
+			logger.Logger.Error("getuserid", err)
+		} else {
+			error := models.ArticleServer.Collect(User.Title, userId)
+			if error != nil {
+				logger.Logger.Error("GetArticle ", error)
+
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+			} else {
+
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
+			}
+		}
+	}
+
+	this.ServeJSON()
+
+}
+func (this *ArticleController) ShowCollection() {
+	var User struct {
+		User  string
+	}
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &User)
+	if err != nil {
+		logger.Logger.Error("Unmarshal ", err)
+		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
+	} else {
+		userId, err := models.UserServer.GetUserId(User.User)
+		if err != nil {
+			logger.Logger.Error("getuserid", err)
+		} else {
+			articles, error := models.ArticleServer.ShowCollection(userId)
+			if error != nil {
+				logger.Logger.Error("GetArticle ", error)
+
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+			} else {
+
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed, common.RespKeyData: articles}
+			}
+		}
+	}
+
+	this.ServeJSON()
+
+}

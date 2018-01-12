@@ -3,8 +3,8 @@ package models
 import (
 	"github.com/astaxie/beego/orm"
 	"github.com/tongyuehong1/golang-project/application/forum/common"
-	"strconv"
 	"time"
+	"github.com/tongyuehong1/another-golang/beego-training/libs/logger"
 )
 
 func init() {
@@ -115,11 +115,11 @@ func (this *ArticleServiceProvider) Collect(title string, userId uint64) error {
 	o := orm.NewOrm()
 	var value string
 
-	err := o.Raw("SELECT value FROM forum.userextra WHERE userId=? AND `key`=? AND value=? LIMIT 1 LOCK IN SHARE MODE", userId, common.KeyCollection, title).QueryRow(&value)
+	err := o.Raw("SELECT value FROM forum.userextra WHERE id=? AND `key`=? AND value=? LIMIT 1 LOCK IN SHARE MODE", userId, common.KeyCollection, title).QueryRow(&value)
 
 	if err == orm.ErrNoRows {
 		// 未收藏，开始收藏
-		sql := "INSERT INTO forum.userextra(userid,`key`,value)VALUES(?,?,?)"
+		sql := "INSERT INTO forum.userextra(id,`key`,value)VALUES(?,?,?)"
 		values := []interface{}{userId, common.KeyCollection, title}
 		raw := o.Raw(sql, values)
 		_, err := raw.Exec()
@@ -127,7 +127,7 @@ func (this *ArticleServiceProvider) Collect(title string, userId uint64) error {
 		return err
 	} else if err == nil {
 		// 已经收藏，取消收藏
-		sql := "DELETE FROM forum.userextra WHERE value=? AND userid=? AND `key`=? LIMIT 1"
+		sql := "DELETE FROM forum.userextra WHERE value=? AND id=? AND `key`=? LIMIT 1"
 		values := []interface{}{userId, common.KeyCollection, title}
 		raw := o.Raw(sql, values)
 		_, err := raw.Exec()
@@ -142,21 +142,22 @@ func (this *ArticleServiceProvider) ShowCollection(userId uint64) ([]Article, er
 	o := orm.NewOrm()
 	var articles []Article
 	var collection []string
-	_, err := o.Raw("SELECT value FROM forum.userextra WHERE `key`=? AND userId=?", common.KeyCollection, userId).QueryRows(&collection)
+	_, err := o.Raw("SELECT value FROM forum.userextra WHERE `key`=? AND id=?", common.KeyCollection, userId).QueryRows(&collection)
 
 	if err != nil {
 		return articles, err
 	}
-	for _, articleid := range collection {
-		article := Article{}
 
-		articleId, err := strconv.ParseUint(articleid, 10, 64)
+	logger.Logger.Info("collection:", collection)
+	for _, title := range collection {
+		article := Article{}
+		logger.Logger.Info("title:", title)
 
 		if err != nil {
 			return articles, err
 		}
 
-		err = o.Raw("SELECT * FROM mall.ware WHERE id=? LIMIT 1 LOCK IN SHARE MODE", articleId).QueryRow(&article)
+		err = o.Raw("SELECT * FROM  forum.article WHERE title=? LIMIT 1 LOCK IN SHARE MODE", title).QueryRow(&article)
 
 		if err != nil {
 			return articles, err

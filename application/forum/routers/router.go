@@ -14,6 +14,8 @@ func init() {
 	beego.Router("/article/recommend", &controllers.ArticleController{}, "post:Recommend")
 	beego.Router("/article/getarticle", &controllers.ArticleController{}, "post:GetArticle")
 	beego.Router("/article/allarticle", &controllers.ArticleController{}, "get:AllArticle")
+	beego.Router("/article/collect", &controllers.ArticleController{}, "post:Collect")
+	beego.Router("/article/showcollection", &controllers.ArticleController{}, "post:ShowCollection")
 
 	beego.Router("/comment/insert", &controllers.CommentController{}, "post:Insert")
 	beego.Router("/comment/getcomment", &controllers.CommentController{}, "post:GetComment")

@@ -23,7 +23,7 @@ type User struct {
 
 // 用户相关信息
 type UserExtraInfo struct {
-	UserID uint64	`orm:"column(userid);pk"  json:"userid"`
+	UserID uint64	`orm:"column(id);pk"  json:"userid"`
 	Key    string
 	Value  string
 }
@@ -56,4 +56,13 @@ func (this *UserServiceProvider) Login(name string, pass string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (this *UserServiceProvider) GetUserId(name string) (uint64, error) {
+	o := orm.NewOrm()
+	var userId uint64
+
+	err := o.Raw("SELECT id FROM forum.user WHERE name = ?", name).QueryRow(&userId)
+
+	return userId, err
 }
