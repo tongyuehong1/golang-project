@@ -2,7 +2,7 @@ package models
 
 import (
 	"github.com/astaxie/beego/orm"
-	"github.com/tongyuehong1/golang-project/application/blog/utility"
+	"github.com/tongyuehong1/golang-project/application/forum/utility"
 )
 
 func init() {
@@ -23,7 +23,7 @@ type User struct {
 
 // 用户相关信息
 type UserExtraInfo struct {
-	UserID uint64	`orm:"column(id);pk"  json:"userid"`
+	UserID uint64 `orm:"column(id);pk"  json:"userid"`
 	Key    string
 	Value  string
 }

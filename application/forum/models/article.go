@@ -4,7 +4,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/tongyuehong1/golang-project/application/forum/common"
 	"time"
-	"github.com/tongyuehong1/another-golang/beego-training/libs/logger"
+	"unicode/utf8"
 )
 
 func init() {
@@ -94,6 +94,22 @@ func (this *ArticleServiceProvider) AllArticle() ([]ShowArticle, error) {
 	return showarticle, err
 }
 
+// 搜索文章
+func (this *ArticleServiceProvider) SearchArticle(title string) ([]Article, error) {
+	o := orm.NewOrm()
+	var articles []Article
+	var str string
+	for len(title) > 0 {
+		r, size := utf8.DecodeRuneInString(title)
+		title = title[size:]
+
+		str += string(r) + "%"
+	}
+	str = "%" + str
+	_,err := o.Raw("SELECT * FROM forum.article WHERE title LIKE ?", str).QueryRows(&articles)
+	return articles, err
+}
+
 // 删除文章
 func (this *ArticleServiceProvider) DeleteArticle(title string) error {
 	o := orm.NewOrm()
@@ -148,18 +164,15 @@ func (this *ArticleServiceProvider) ShowCollection(userId uint64) ([]Article, er
 		return articles, err
 	}
 
-	logger.Logger.Info("collection:", collection)
 	for _, title := range collection {
 		article := Article{}
-		logger.Logger.Info("title:", title)
-
 		if err != nil {
 			return articles, err
 		}
 
-		err = o.Raw("SELECT * FROM  forum.article WHERE title=? LIMIT 1 LOCK IN SHARE MODE", title).QueryRow(&article)
+		error := o.Raw("SELECT * FROM  forum.article WHERE title=? LIMIT 1 LOCK IN SHARE MODE", title).QueryRow(&article)
 
-		if err != nil {
+		if error != nil {
 			return articles, err
 		}
 		articles = append(articles, article)

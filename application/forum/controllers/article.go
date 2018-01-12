@@ -32,6 +32,7 @@ func (this *ArticleController) Insert() {
 
 	this.ServeJSON()
 }
+
 func (this *ArticleController) Change() {
 	article := models.Article{}
 	err := json.Unmarshal(this.Ctx.Input.RequestBody, &article)
@@ -52,6 +53,8 @@ func (this *ArticleController) Change() {
 
 	this.ServeJSON()
 }
+
+// 推荐文章
 func (this *ArticleController) Recommend() {
 	var Title struct {
 		Title string
@@ -74,6 +77,8 @@ func (this *ArticleController) Recommend() {
 
 	this.ServeJSON()
 }
+
+// 根据类别显示
 func (this *ArticleController) GetArticle() {
 	var Category struct {
 		Category string
@@ -96,12 +101,39 @@ func (this *ArticleController) GetArticle() {
 
 	this.ServeJSON()
 }
+
+// 显示所有文章
 func (this *ArticleController) AllArticle() {
 	show, _ := models.ArticleServer.AllArticle()
 	this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed, common.RespKeyData: show}
 
 	this.ServeJSON()
 }
+
+// 显示搜索文章
+func (this *ArticleController) SearchArticle() {
+	var Title struct {
+		Title string
+	}
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &Title)
+	if err != nil {
+		logger.Logger.Error("Unmarshal ", err)
+		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
+	} else {
+		show, err := models.ArticleServer.SearchArticle(Title.Title)
+		if err != nil {
+			logger.Logger.Error("SearchArticle ", err)
+
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+		} else {
+
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed, common.RespKeyData: show}
+		}
+	}
+
+	this.ServeJSON()
+}
+
 
 // 收藏文章
 func (this *ArticleController) Collect() {
@@ -133,9 +165,11 @@ func (this *ArticleController) Collect() {
 	this.ServeJSON()
 
 }
+
+// 显示收藏文章
 func (this *ArticleController) ShowCollection() {
 	var User struct {
-		User  string
+		User string
 	}
 	err := json.Unmarshal(this.Ctx.Input.RequestBody, &User)
 	if err != nil {
