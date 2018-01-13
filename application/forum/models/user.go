@@ -3,10 +3,11 @@ package models
 import (
 	"github.com/astaxie/beego/orm"
 	"github.com/tongyuehong1/golang-project/application/forum/utility"
+	"fmt"
 )
 
 func init() {
-	orm.RegisterModel(new(User))
+	orm.RegisterModel(new(User),new(UserExtra))
 }
 
 type UserServiceProvider struct {
@@ -22,10 +23,11 @@ type User struct {
 }
 
 // 用户相关信息
-type UserExtraInfo struct {
-	UserID uint64 `orm:"column(id);pk"  json:"userid"`
-	Key    string
-	Value  string
+type UserExtra struct {
+	Id     uint64	`orm:"column(id);pk"  json:"id"`
+	UserID uint64   `orm:"column(userid);"  json:"userid"`
+	Key    string	`orm:"column(key);"  json:"key"`
+	Value  string	`orm:"column(value);"  json:"value"`
 }
 
 func (this *UserServiceProvider) Create(user User) error {
@@ -41,8 +43,9 @@ func (this *UserServiceProvider) Create(user User) error {
 	newuser.Name = user.Name
 	newuser.Pass = password
 	newuser.Phone = user.Phone
-	_, error := o.Insert(&newuser)
-	return error
+	_, err = o.Insert(newuser)
+	fmt.Println("er",err)
+	return err
 }
 
 func (this *UserServiceProvider) Login(name string, pass string) (bool, error) {

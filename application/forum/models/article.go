@@ -48,9 +48,10 @@ type ArticleExtraInfo struct {
 }
 
 // 添加文章
-func (this *ArticleServiceProvider) Insert(article Article) error {
+func (this *ArticleServiceProvider) Insert(article Article,name string) error {
 	o := orm.NewOrm()
 	article.Created = time.Now()
+	article.Author = name
 	sql := "INSERT INTO forum.article(id,title,category,content,author,created,brief,status) VALUES(?,?,?,?,?,?,?,?)"
 	values := []interface{}{article.ArticleId, article.Title, article.Category, article.Content, article.Author, article.Created, article.Brief, common.NormalArticle}
 	raw := o.Raw(sql, values)
@@ -126,17 +127,27 @@ func (this *ArticleServiceProvider) DeleteArticle(title string) error {
 	return err
 }
 
+// 获取文章id
+func (this *ArticleServiceProvider) GetArticleId(title string) (uint64, error) {
+	o := orm.NewOrm()
+	var articleId uint64
+
+	err := o.Raw("SELECT id FROM forum.article WHERE title = ?", title).QueryRow(&articleId)
+
+	return articleId, err
+}
+
 // 收藏文章（取消收藏）
-func (this *ArticleServiceProvider) Collect(title string, userId uint64) error {
+func (this *ArticleServiceProvider) Collect(articleId uint64, userId uint64) error {
 	o := orm.NewOrm()
 	var value string
 
-	err := o.Raw("SELECT value FROM forum.userextra WHERE id=? AND `key`=? AND value=? LIMIT 1 LOCK IN SHARE MODE", userId, common.KeyCollection, title).QueryRow(&value)
+	err := o.Raw("SELECT value FROM forum.userextra WHERE id=? AND `key`=? AND value=? LIMIT 1 LOCK IN SHARE MODE", userId, common.KeyCollection, articleId).QueryRow(&value)
 
 	if err == orm.ErrNoRows {
 		// 未收藏，开始收藏
 		sql := "INSERT INTO forum.userextra(id,`key`,value)VALUES(?,?,?)"
-		values := []interface{}{userId, common.KeyCollection, title}
+		values := []interface{}{userId, common.KeyCollection, articleId}
 		raw := o.Raw(sql, values)
 		_, err := raw.Exec()
 
@@ -144,7 +155,7 @@ func (this *ArticleServiceProvider) Collect(title string, userId uint64) error {
 	} else if err == nil {
 		// 已经收藏，取消收藏
 		sql := "DELETE FROM forum.userextra WHERE value=? AND id=? AND `key`=? LIMIT 1"
-		values := []interface{}{userId, common.KeyCollection, title}
+		values := []interface{}{articleId, userId, common.KeyCollection}
 		raw := o.Raw(sql, values)
 		_, err := raw.Exec()
 
@@ -170,9 +181,9 @@ func (this *ArticleServiceProvider) ShowCollection(userId uint64) ([]Article, er
 			return articles, err
 		}
 
-		error := o.Raw("SELECT * FROM  forum.article WHERE title=? LIMIT 1 LOCK IN SHARE MODE", title).QueryRow(&article)
+		err = o.Raw("SELECT * FROM  forum.article WHERE title=? LIMIT 1 LOCK IN SHARE MODE", title).QueryRow(&article)
 
-		if error != nil {
+		if err != nil {
 			return articles, err
 		}
 		articles = append(articles, article)
@@ -180,3 +191,44 @@ func (this *ArticleServiceProvider) ShowCollection(userId uint64) ([]Article, er
 
 	return articles, nil
 }
+
+func (this *ArticleServiceProvider) InsertLastTime(userid uint64) (int64, error){
+	o := orm.NewOrm()
+	var created []time.Time
+	var last time.Time
+	_, err := o.Raw("SELECT created FROM forum.article WHERE author=? ORDER BY created DESC", userid).QueryRows(&created)
+
+	if err != nil{
+		return 0, err
+	} else {
+		last = created[0]
+	}
+	o.Using("forum")
+	sr := last.Unix()
+	lasttime := time.Unix(sr, 0).Format("2006-01-02 15:04:05")
+
+	userextra := UserExtra{Key: "KeyLastInsert", UserID : userid, Value: lasttime}
+	isCreated, id, err := o.ReadOrCreate(&userextra, "Key", "UserID")
+	if err == nil {
+		if !isCreated {
+			sql := "UPDATE forum.userextra SET value=? WHERE id=? AND `key`=?"
+			values := []interface{}{last, userid, common.KeyLastInsert}
+			raw := o.Raw(sql, values)
+			_, err = raw.Exec()
+			return id, err
+		}
+	}
+	return id, err
+}
+//func (this *ArticleServiceProvider) GetLastTime(userid uint64) error{
+//	o := orm.NewOrm()
+//	o.Using("forum")
+//	user := UserExtra{UserID:userid, Key:common.KeyLastInsert}
+//	err := o.Read(&user, "name")
+//	if err != nil {
+//		return err
+//	} else {
+//		t := user.Value
+//		lasttime := time.
+//	}
+//}

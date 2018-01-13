@@ -12,9 +12,29 @@ type AdminServiceProvider struct {
 var AdminServer *AdminServiceProvider
 
 type Manager struct {
-	ID   uint64 `orm:"column(id)"`
-	Name string
-	Pass string
+	ID   uint64 `orm:"column(id)"     json:"id"`
+	Name string `orm:"column(name)"   json:"name"`
+	Pass string `orm:"column(pass)"   json:"pass"`
+}
+
+
+func (this *AdminServiceProvider) Create(manager Manager) error {
+	o := orm.NewOrm()
+
+	// 哈希加密
+	hash, err := utility.GenerateHash(manager.Pass)
+
+	if err != nil {
+		return err
+	}
+	password := string(hash)
+
+	sql := "INSERT INTO article.admin(name,pass) VALUES (?,?)"
+	values := []interface{}{manager.Name, password}
+	raw := o.Raw(sql, values)
+	_, err = raw.Exec()
+
+	return err
 }
 
 func (this *AdminServiceProvider) Login(name string, password string) (bool, error) {

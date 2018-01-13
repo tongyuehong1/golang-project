@@ -17,13 +17,13 @@ func (this *Article) TableName() string {
 }
 
 type Article struct {
-	Id      int       `orm:"column(id);pk"  json:"id"`
+	Id      int       `orm:"column(id);pk"    json:"id"`
 	Classes string    `orm:"column(classes)"  json:"classes"`
-	Title   string    `orm:"column(title)"  json:"title"`
+	Title   string    `orm:"column(title)"    json:"title"`
 	Created time.Time `orm:"column(created)"  json:"created"`
-	Brief   string    `orm:"column(brief)"  json:"brief"`
+	Brief   string    `orm:"column(brief)"    json:"brief"`
 	Article string    `orm:"column(article)"  json:"article"`
-	Status  bool      `orm:"column(status)"  json:"status"`
+	Status  bool      `orm:"column(status)"   json:"status"`
 }
 
 type Show struct {

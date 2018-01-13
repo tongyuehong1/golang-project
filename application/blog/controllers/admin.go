@@ -15,6 +15,31 @@ type AdminController struct {
 	beego.Controller
 }
 
+
+func (this *AdminController) Create() {
+	var manager models.Manager
+
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &manager)
+
+	if err != nil {
+		logger.Logger.Error("Unmarshal:", err)
+
+		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
+	} else {
+		err := models.AdminServer.Create(manager)
+
+		if err != nil {
+			logger.Logger.Error("Unmarshal", err)
+
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+		} else {
+
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
+		}
+	}
+
+	this.ServeJSON()
+}
 func (this *AdminController) Login() {
 	var admin models.Manager
 

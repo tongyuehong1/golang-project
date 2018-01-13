@@ -17,5 +17,5 @@ const (
 
 	// user常用Key值
 	KeyCollection = "collection"
-
+	KeyLastInsert = "lastinsert"
 )
