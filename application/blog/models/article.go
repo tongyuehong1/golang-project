@@ -1,11 +1,12 @@
 package models
 
 import (
-	"time"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql" // import your used driver
 	"github.com/tongyuehong1/golang-project/application/blog/common"
-	//"database/sql"
+	"time"
+
+	"github.com/tongyuehong1/golang-project/libs/logger"
 )
 
 func init() {
@@ -23,7 +24,7 @@ type Article struct {
 	Created time.Time `orm:"column(created)"  json:"created"`
 	Brief   string    `orm:"column(brief)"    json:"brief"`
 	Article string    `orm:"column(article)"  json:"article"`
-	Status  bool      `orm:"column(status)"   json:"status"`
+	Status  int       `orm:"column(status)"   json:"status"`
 }
 
 type Show struct {
@@ -33,7 +34,7 @@ type Show struct {
 	Created time.Time
 	Brief   string
 	Article string
-	Status  bool
+	Status  int
 }
 
 type ArticleServiceProvider struct {
@@ -44,8 +45,9 @@ var ArticleServer *ArticleServiceProvider
 func (this *ArticleServiceProvider) Insert(article Article) error {
 	o := orm.NewOrm()
 	article.Created = time.Now()
+	logger.Logger.Info("article:", article)
 	sql := "INSERT INTO article.article(classes,title,brief,article,status) VALUES(?,?,?,?,?)"
-	values := []interface{}{article.Classes, article.Title, article.Brief, article.Article, article.Status}
+	values := []interface{}{article.Classes, article.Title, article.Brief, article.Article, common.NormalArticle}
 	raw := o.Raw(sql, values)
 	_, err := raw.Exec()
 	return err
@@ -99,7 +101,7 @@ func (this *ArticleServiceProvider) UpdateBrief(title string, brief string) erro
 func (this *ArticleServiceProvider) Delete(title string) error {
 	o := orm.NewOrm()
 	sql := "UPDATE Article SET status=? WHERE title=? LIMIT 1"
-	values := []interface{}{false, title}
+	values := []interface{}{common.RemovedArticle, title}
 	raw := o.Raw(sql, values)
 	result, err := raw.Exec()
 	if err == nil {
@@ -114,6 +116,6 @@ func (this *ArticleServiceProvider) Delete(title string) error {
 func (this *ArticleServiceProvider) Get(classes string) ([]Show, error) {
 	var show []Show
 	o := orm.NewOrm()
-	_, err := o.Raw("SELECT * FROM article.article WHERE classes=? AND status=?", classes, true).QueryRows(&show)
+	_, err := o.Raw("SELECT * FROM article.article WHERE classes=? AND status=?", classes, common.NormalArticle).QueryRows(&show)
 	return show, err
 }

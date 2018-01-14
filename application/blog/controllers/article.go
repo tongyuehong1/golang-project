@@ -17,6 +17,7 @@ type ArticleController struct {
 func (this *ArticleController) Insert() {
 	article := models.Article{}
 	err := json.Unmarshal(this.Ctx.Input.RequestBody, &article)
+	logger.Logger.Info("articleeee:", article)
 	if err != nil {
 		logger.Logger.Error("Unmarshal ", err)
 		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}

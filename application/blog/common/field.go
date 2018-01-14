@@ -6,5 +6,8 @@ const (
 
 	DBArticle = "article"
 
+	NormalArticle  = 0
+	RemovedArticle = 1
+
 	SessionUserID = "userId"
 )

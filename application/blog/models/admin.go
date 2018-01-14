@@ -17,7 +17,6 @@ type Manager struct {
 	Pass string `orm:"column(pass)"   json:"pass"`
 }
 
-
 func (this *AdminServiceProvider) Create(manager Manager) error {
 	o := orm.NewOrm()
 

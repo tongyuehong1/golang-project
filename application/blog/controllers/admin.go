@@ -15,7 +15,6 @@ type AdminController struct {
 	beego.Controller
 }
 
-
 func (this *AdminController) Create() {
 	var manager models.Manager
 
@@ -72,6 +71,13 @@ func (this *AdminController) Login() {
 			}
 		}
 	}
+
+	this.ServeJSON()
+}
+
+func (this *AdminController) Logout() {
+	this.DestroySession()
+	this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
 
 	this.ServeJSON()
 }

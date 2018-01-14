@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/astaxie/beego/orm"
 	"github.com/tongyuehong1/golang-project/application/forum/common"
+	"github.com/tongyuehong1/golang-project/libs/logger"
 	"time"
 	"unicode/utf8"
 )
@@ -48,15 +49,35 @@ type ArticleExtraInfo struct {
 }
 
 // 添加文章
-func (this *ArticleServiceProvider) Insert(article Article,name string) error {
+func (this *ArticleServiceProvider) Insert(article Article, name string) (int64,error) {
 	o := orm.NewOrm()
-	article.Created = time.Now()
-	article.Author = name
-	sql := "INSERT INTO forum.article(id,title,category,content,author,created,brief,status) VALUES(?,?,?,?,?,?,?,?)"
-	values := []interface{}{article.ArticleId, article.Title, article.Category, article.Content, article.Author, article.Created, article.Brief, common.NormalArticle}
-	raw := o.Raw(sql, values)
-	_, err := raw.Exec()
-	return err
+	user, _ := UserServer.GetUserId(name)
+	var id int64
+	lasttime, err := UserServer.GetLastTime(user)
+	//present := time.Now()
+	//a, _ := time.ParseDuration("5m")
+	now := time.Now()
+	m, _ := time.ParseDuration("5m")
+	m1 := lasttime.Add(m)
+	//fmt.Println(m1)
+	subM := now.Sub(m1)
+	if subM.Minutes() > 5{
+		article.Created = time.Now()
+		article.Author = name
+		sql := "INSERT INTO forum.article(title,category,content,author,created,brief,status) VALUES(?,?,?,?,?,?,?)"
+		values := []interface{}{article.Title, article.Category, article.Content, article.Author, article.Created, article.Brief, common.NormalArticle}
+		raw := o.Raw(sql, values)
+		resu,err:=raw.Exec()
+		if err != nil {
+			return 0,err
+		}
+		id, _ = resu.LastInsertId()
+	} else {
+		logger.Logger.Info("添加出现错误：", "超出五分钟")
+		return 0, err
+	}
+	_, err = ArticleServer.InsertLastTime(user)
+	return id,err
 }
 
 // 修改文章
@@ -107,7 +128,7 @@ func (this *ArticleServiceProvider) SearchArticle(title string) ([]Article, erro
 		str += string(r) + "%"
 	}
 	str = "%" + str
-	_,err := o.Raw("SELECT * FROM forum.article WHERE title LIKE ?", str).QueryRows(&articles)
+	_, err := o.Raw("SELECT * FROM forum.article WHERE title LIKE ?", str).QueryRows(&articles)
 	return articles, err
 }
 
@@ -192,43 +213,40 @@ func (this *ArticleServiceProvider) ShowCollection(userId uint64) ([]Article, er
 	return articles, nil
 }
 
-func (this *ArticleServiceProvider) InsertLastTime(userid uint64) (int64, error){
+func (this *ArticleServiceProvider) InsertLastTime(userid uint64)  (int64,error) {
 	o := orm.NewOrm()
-	var created []time.Time
-	var last time.Time
-	_, err := o.Raw("SELECT created FROM forum.article WHERE author=? ORDER BY created DESC", userid).QueryRows(&created)
+	//var created time.Time
+	//var last time.Time
+	//err := o.Raw("SELECT created FROM forum.article WHERE author=? ORDER BY created DESC", userid).QueryRow(&created)
+	//
+	//if err != nil {
+	//	return  err
+	//} else {
+	//	fmt.Println("InsertLastTime err:",err)
+	//}
+	//o.Using("forum")
+	//sr := last.Unix()
+	//lasttime := time.Unix(sr, 0).Format("2006-01-02 15:04:05")
 
-	if err != nil{
-		return 0, err
-	} else {
-		last = created[0]
-	}
-	o.Using("forum")
-	sr := last.Unix()
-	lasttime := time.Unix(sr, 0).Format("2006-01-02 15:04:05")
-
-	userextra := UserExtra{Key: "KeyLastInsert", UserID : userid, Value: lasttime}
-	isCreated, id, err := o.ReadOrCreate(&userextra, "Key", "UserID")
-	if err == nil {
-		if !isCreated {
-			sql := "UPDATE forum.userextra SET value=? WHERE id=? AND `key`=?"
-			values := []interface{}{last, userid, common.KeyLastInsert}
-			raw := o.Raw(sql, values)
-			_, err = raw.Exec()
-			return id, err
-		}
-	}
-	return id, err
+	//userextra := UserExtra{Key: "KeyLastInsert", UserID: userid, Value: lasttime}
+	//isCreated, id, err := o.ReadOrCreate(&userextra, "Key", "UserID")
+	//if err == nil {
+	//	if !isCreated {
+	//		sql := "UPDATE forum.userextra SET value=? WHERE id=? AND `key`=?"
+	//		values := []interface{}{last, userid, common.KeyLastInsert}
+	//		raw := o.Raw(sql, values)
+	//		_, err = raw.Exec()
+	//		return id, err
+	//	}
+	//}
+	//sql := "UPDATE forum.userextra SET value=? WHERE userid=? AND `key`=?"
+	//values := []interface{}{time.Now().Format("2006-01-02 15:04:05"), userid, common.KeyLastInsert}
+	//raw := o.Raw(sql, values)
+	//_, err := raw.Exec()
+	var last UserExtra
+	o.Raw("SELECT * FROM forum.userextra WHERE userid=? AND `key`=?",userid, common.KeyLastInsert).QueryRow(&last)
+	last.Value = time.Now().Format("2006-01-02 15:04:05")
+	//var u  UserExtra=UserExtra{Key: common.KeyLastInsert, UserID: userid, Value: time.Now().Format("2006-01-02 15:04:05")}
+	id,err := o.Update(&last, "value")
+	return  id,err
 }
-//func (this *ArticleServiceProvider) GetLastTime(userid uint64) error{
-//	o := orm.NewOrm()
-//	o.Using("forum")
-//	user := UserExtra{UserID:userid, Key:common.KeyLastInsert}
-//	err := o.Read(&user, "name")
-//	if err != nil {
-//		return err
-//	} else {
-//		t := user.Value
-//		lasttime := time.
-//	}
-//}

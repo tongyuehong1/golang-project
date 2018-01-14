@@ -4,15 +4,15 @@ import (
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 
+	"github.com/astaxie/beego/plugins/cors"
 	"github.com/tongyuehong1/golang-project/application/blog/filters"
 	mysql "github.com/tongyuehong1/golang-project/application/blog/init"
 	_ "github.com/tongyuehong1/golang-project/application/blog/routers"
-	"github.com/astaxie/beego/plugins/cors"
 )
 
 func main() {
 	beego.InsertFilter("*", beego.BeforeRouter, cors.Allow(&cors.Options{
-		AllowOrigins:    []string{"*"},
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"POST", "GET"},
 		AllowHeaders:     []string{"Origin", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length"},

@@ -19,8 +19,12 @@ func (this *ArticleController) Insert() {
 		logger.Logger.Error("Unmarshal ", err)
 		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
 	} else {
-		err := models.ArticleServer.Insert(article,this.GetSession(common.SessionUserID).(string))
-		if err != nil {
+		id, err := models.ArticleServer.Insert(article, this.GetSession(common.SessionUserID).(string))
+		if id == 0 {
+			logger.Logger.Warn("Insert too frequently")
+
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrFrequentInsert}
+		} else if err != nil {
 			logger.Logger.Error("Insert ", err)
 
 			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
@@ -134,8 +138,7 @@ func (this *ArticleController) SearchArticle() {
 	this.ServeJSON()
 }
 
-
- // 收藏文章
+// 收藏文章
 //func (this *ArticleController) Collect() {
 //	var User struct {
 //		User  string
@@ -165,7 +168,6 @@ func (this *ArticleController) SearchArticle() {
 //	this.ServeJSON()
 //
 //}
-
 
 // 显示收藏文章
 func (this *ArticleController) ShowCollection() {
