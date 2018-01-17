@@ -49,27 +49,24 @@ type ArticleExtraInfo struct {
 }
 
 // 添加文章
-func (this *ArticleServiceProvider) Insert(article Article, name string) (int64,error) {
+func (this *ArticleServiceProvider) Insert(article Article, name string) (int64, error) {
 	o := orm.NewOrm()
 	user, _ := UserServer.GetUserId(name)
 	var id int64
 	lasttime, err := UserServer.GetLastTime(user)
-	//present := time.Now()
-	//a, _ := time.ParseDuration("5m")
 	now := time.Now()
 	m, _ := time.ParseDuration("5m")
 	m1 := lasttime.Add(m)
-	//fmt.Println(m1)
 	subM := now.Sub(m1)
-	if subM.Minutes() > 5{
+	if subM.Minutes() > 5 {
 		article.Created = time.Now()
 		article.Author = name
 		sql := "INSERT INTO forum.article(title,category,content,author,created,brief,status) VALUES(?,?,?,?,?,?,?)"
 		values := []interface{}{article.Title, article.Category, article.Content, article.Author, article.Created, article.Brief, common.NormalArticle}
 		raw := o.Raw(sql, values)
-		resu,err:=raw.Exec()
+		resu, err := raw.Exec()
 		if err != nil {
-			return 0,err
+			return 0, err
 		}
 		id, _ = resu.LastInsertId()
 	} else {
@@ -77,7 +74,7 @@ func (this *ArticleServiceProvider) Insert(article Article, name string) (int64,
 		return 0, err
 	}
 	_, err = ArticleServer.InsertLastTime(user)
-	return id,err
+	return id, err
 }
 
 // 修改文章
@@ -159,23 +156,31 @@ func (this *ArticleServiceProvider) GetArticleId(title string) (uint64, error) {
 }
 
 // 收藏文章（取消收藏）
-func (this *ArticleServiceProvider) Collect(articleId uint64, userId uint64) error {
+func (this *ArticleServiceProvider) Collect(title string, user string) error {
 	o := orm.NewOrm()
 	var value string
-
-	err := o.Raw("SELECT value FROM forum.userextra WHERE id=? AND `key`=? AND value=? LIMIT 1 LOCK IN SHARE MODE", userId, common.KeyCollection, articleId).QueryRow(&value)
+	articleId, err := ArticleServer.GetArticleId(title)
+	if err != nil {
+		logger.Logger.Error("getarticleid:", err)
+	}
+	userId, err := UserServer.GetUserId(user)
+	if err != nil {
+		logger.Logger.Error("getuserid:", err)
+	}
+	err = o.Raw("SELECT value FROM forum.userextra WHERE userid=? AND `key`=? AND value=? LIMIT 1 LOCK IN SHARE MODE", userId, common.KeyCollection, articleId).QueryRow(&value)
 
 	if err == orm.ErrNoRows {
 		// 未收藏，开始收藏
-		sql := "INSERT INTO forum.userextra(id,`key`,value)VALUES(?,?,?)"
+		sql := "INSERT INTO forum.userextra(userid,`key`,value)VALUES(?,?,?)"
 		values := []interface{}{userId, common.KeyCollection, articleId}
 		raw := o.Raw(sql, values)
 		_, err := raw.Exec()
-
-		return err
+		if err != nil {
+			logger.Logger.Error("collect:", err)
+		}
 	} else if err == nil {
 		// 已经收藏，取消收藏
-		sql := "DELETE FROM forum.userextra WHERE value=? AND id=? AND `key`=? LIMIT 1"
+		sql := "DELETE FROM forum.userextra WHERE value=? AND userid=? AND `key`=? LIMIT 1"
 		values := []interface{}{articleId, userId, common.KeyCollection}
 		raw := o.Raw(sql, values)
 		_, err := raw.Exec()
@@ -190,7 +195,7 @@ func (this *ArticleServiceProvider) ShowCollection(userId uint64) ([]Article, er
 	o := orm.NewOrm()
 	var articles []Article
 	var collection []string
-	_, err := o.Raw("SELECT value FROM forum.userextra WHERE `key`=? AND id=?", common.KeyCollection, userId).QueryRows(&collection)
+	_, err := o.Raw("SELECT value FROM forum.userextra WHERE `key`=? AND userid=?", common.KeyCollection, userId).QueryRows(&collection)
 
 	if err != nil {
 		return articles, err
@@ -213,7 +218,7 @@ func (this *ArticleServiceProvider) ShowCollection(userId uint64) ([]Article, er
 	return articles, nil
 }
 
-func (this *ArticleServiceProvider) InsertLastTime(userid uint64)  (int64,error) {
+func (this *ArticleServiceProvider) InsertLastTime(userid uint64) (int64, error) {
 	o := orm.NewOrm()
 	//var created time.Time
 	//var last time.Time
@@ -244,9 +249,9 @@ func (this *ArticleServiceProvider) InsertLastTime(userid uint64)  (int64,error)
 	//raw := o.Raw(sql, values)
 	//_, err := raw.Exec()
 	var last UserExtra
-	o.Raw("SELECT * FROM forum.userextra WHERE userid=? AND `key`=?",userid, common.KeyLastInsert).QueryRow(&last)
+	o.Raw("SELECT * FROM forum.userextra WHERE userid=? AND `key`=?", userid, common.KeyLastInsert).QueryRow(&last)
 	last.Value = time.Now().Format("2006-01-02 15:04:05")
 	//var u  UserExtra=UserExtra{Key: common.KeyLastInsert, UserID: userid, Value: time.Now().Format("2006-01-02 15:04:05")}
-	id,err := o.Update(&last, "value")
-	return  id,err
+	id, err := o.Update(&last, "value")
+	return id, err
 }

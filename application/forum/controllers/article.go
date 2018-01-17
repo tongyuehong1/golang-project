@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/orm"
 	"github.com/tongyuehong1/golang-project/application/forum/common"
 	"github.com/tongyuehong1/golang-project/application/forum/models"
 	"github.com/tongyuehong1/golang-project/libs/logger"
@@ -139,53 +140,49 @@ func (this *ArticleController) SearchArticle() {
 }
 
 // 收藏文章
-//func (this *ArticleController) Collect() {
-//	var User struct {
-//		User  string
-//		Title string
-//	}
-//	err := json.Unmarshal(this.Ctx.Input.RequestBody, &User)
-//	if err != nil {
-//		logger.Logger.Error("Unmarshal ", err)
-//		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
-//	} else {
-//		userId, err := models.UserServer.GetUserId(User.User)
-//		if err != nil {
-//			logger.Logger.Error("getuserid", err)
-//		} else {
-//			error := models.ArticleServer.Collect(User.Title, userId)
-//			if error != nil {
-//				logger.Logger.Error("GetArticle ", error)
-//
-//				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
-//			} else {
-//
-//				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
-//			}
-//		}
-//	}
-//
-//	this.ServeJSON()
-//
-//}
+func (this *ArticleController) Collect() {
+	var Title struct {
+		Title string
+	}
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &Title)
+	if err != nil {
+		logger.Logger.Error("Unmarshal ", err)
+		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
+	} else {
+		err = models.ArticleServer.Collect(Title.Title, this.GetSession(common.SessionUserID).(string))
+		if err != nil {
+			if err != orm.ErrNoRows {
+				logger.Logger.Info("collect", err)
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+			} else {
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
+			}
+		} else {
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
+		}
+	}
+
+	this.ServeJSON()
+
+}
 
 // 显示收藏文章
 func (this *ArticleController) ShowCollection() {
 	var User struct {
-		User string
+		Name string
 	}
 	err := json.Unmarshal(this.Ctx.Input.RequestBody, &User)
 	if err != nil {
 		logger.Logger.Error("Unmarshal ", err)
 		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
 	} else {
-		userId, err := models.UserServer.GetUserId(User.User)
+		userId, err := models.UserServer.GetUserId(User.Name)
 		if err != nil {
 			logger.Logger.Error("getuserid", err)
 		} else {
-			articles, error := models.ArticleServer.ShowCollection(userId)
-			if error != nil {
-				logger.Logger.Error("GetArticle ", error)
+			articles, err := models.ArticleServer.ShowCollection(userId)
+			if err != nil {
+				logger.Logger.Error("GetArticle ", err)
 
 				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
 			} else {

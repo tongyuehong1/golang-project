@@ -100,7 +100,7 @@ func (this *ArticleServiceProvider) UpdateBrief(title string, brief string) erro
 
 func (this *ArticleServiceProvider) Delete(title string) error {
 	o := orm.NewOrm()
-	sql := "UPDATE Article SET status=? WHERE title=? LIMIT 1"
+	sql := "UPDATE article.article SET status=? WHERE title=? LIMIT 1"
 	values := []interface{}{common.RemovedArticle, title}
 	raw := o.Raw(sql, values)
 	result, err := raw.Exec()
@@ -118,4 +118,13 @@ func (this *ArticleServiceProvider) Get(classes string) ([]Show, error) {
 	o := orm.NewOrm()
 	_, err := o.Raw("SELECT * FROM article.article WHERE classes=? AND status=?", classes, common.NormalArticle).QueryRows(&show)
 	return show, err
+}
+
+func (this *ArticleServiceProvider) Update(title string, article Article) error {
+	o := orm.NewOrm()
+	sql := "UPDATE article.article SET title=?,classes=?,article=?,brief=? WHERE title=? LIMIT 1"
+	values := []interface{}{article.Title, article.Classes, article.Article, article.Brief, title}
+	raw := o.Raw(sql, values)
+	_, err := raw.Exec()
+	return err
 }

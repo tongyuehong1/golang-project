@@ -53,10 +53,10 @@ func (this *AdminController) Login() {
 
 		if err != nil {
 			if err == orm.ErrNoRows {
-				logger.Logger.Error("Unmarshal ", err)
+				logger.Logger.Error("noadmin：", err)
 				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidUser}
 			} else {
-				logger.Logger.Error("Unmarshal ", err)
+				logger.Logger.Error("models： ", err)
 
 				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
 			}

@@ -168,3 +168,30 @@ func (this *ArticleController) Get() {
 
 	this.ServeJSON()
 }
+
+func (this *ArticleController) Update() {
+	var Title struct {
+		Title   string
+		Article models.Article
+	}
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &Title)
+	if err != nil {
+		logger.Logger.Error("Unmarshal ", err)
+		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
+	} else {
+		err := models.ArticleServer.Update(Title.Title, Title.Article)
+		if err != nil {
+			if err == common.ErrNotFound {
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlNotFound}
+			} else {
+				logger.Logger.Error("Update ", err)
+
+				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
+			}
+		} else {
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
+		}
+	}
+
+	this.ServeJSON()
+}

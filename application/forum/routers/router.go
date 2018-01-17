@@ -18,7 +18,7 @@ func init() {
 	beego.Router("/article/getarticle", &controllers.ArticleController{}, "post:GetArticle")
 	beego.Router("/article/searcharticle", &controllers.ArticleController{}, "post:SearchArticle")
 	beego.Router("/article/allarticle", &controllers.ArticleController{}, "get:AllArticle")
-	//beego.Router("/article/collect", &controllers.ArticleController{}, "post:Collect")
+	beego.Router("/article/collect", &controllers.ArticleController{}, "post:Collect")
 	beego.Router("/article/showcollection", &controllers.ArticleController{}, "post:ShowCollection")
 
 	beego.Router("/comment/insert", &controllers.CommentController{}, "post:Insert")
