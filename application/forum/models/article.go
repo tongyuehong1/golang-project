@@ -167,27 +167,30 @@ func (this *ArticleServiceProvider) Collect(title string, user string) error {
 	if err != nil {
 		logger.Logger.Error("getuserid:", err)
 	}
+
 	err = o.Raw("SELECT value FROM forum.userextra WHERE userid=? AND `key`=? AND value=? LIMIT 1 LOCK IN SHARE MODE", userId, common.KeyCollection, articleId).QueryRow(&value)
-
-	if err == orm.ErrNoRows {
-		// 未收藏，开始收藏
-		sql := "INSERT INTO forum.userextra(userid,`key`,value)VALUES(?,?,?)"
-		values := []interface{}{userId, common.KeyCollection, articleId}
-		raw := o.Raw(sql, values)
-		_, err := raw.Exec()
-		if err != nil {
-			logger.Logger.Error("collect:", err)
+	if err != nil {
+		if err == orm.ErrNoRows {
+			// 未收藏，开始收藏
+			sql := "INSERT INTO forum.userextra(userid,`key`,value)VALUES(?,?,?)"
+			values := []interface{}{userId, common.KeyCollection, articleId}
+			raw := o.Raw(sql, values)
+			_, err := raw.Exec()
+			if err != nil {
+				logger.Logger.Error("collect:", err)
+			}
 		}
-	} else if err == nil {
-		// 已经收藏，取消收藏
-		sql := "DELETE FROM forum.userextra WHERE value=? AND userid=? AND `key`=? LIMIT 1"
-		values := []interface{}{articleId, userId, common.KeyCollection}
-		raw := o.Raw(sql, values)
-		_, err := raw.Exec()
-
 		return err
 	}
+
+	// 已经收藏，取消收藏
+	sql := "DELETE FROM forum.userextra WHERE value=? AND userid=? AND `key`=? LIMIT 1"
+	values := []interface{}{articleId, userId, common.KeyCollection}
+	raw := o.Raw(sql, values)
+	_, err = raw.Exec()
+
 	return err
+
 }
 
 // 显示收藏文章

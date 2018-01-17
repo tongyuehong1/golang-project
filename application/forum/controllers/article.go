@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/orm"
 	"github.com/tongyuehong1/golang-project/application/forum/common"
 	"github.com/tongyuehong1/golang-project/application/forum/models"
 	"github.com/tongyuehong1/golang-project/libs/logger"
@@ -151,12 +150,8 @@ func (this *ArticleController) Collect() {
 	} else {
 		err = models.ArticleServer.Collect(Title.Title, this.GetSession(common.SessionUserID).(string))
 		if err != nil {
-			if err != orm.ErrNoRows {
-				logger.Logger.Info("collect", err)
-				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
-			} else {
-				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
-			}
+			logger.Logger.Info("collect", err)
+			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrMysqlQuery}
 		} else {
 			this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrSucceed}
 		}
