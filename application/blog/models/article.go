@@ -113,7 +113,7 @@ func (this *ArticleServiceProvider) Delete(title string) error {
 	return err
 }
 
-func (this *ArticleServiceProvider) Get(classes string) ([]Show, error) {
+func (this *ArticleServiceProvider) GetAll(classes string) ([]Show, error) {
 	var show []Show
 	o := orm.NewOrm()
 	_, err := o.Raw("SELECT * FROM article.article WHERE classes=? AND status=?", classes, common.NormalArticle).QueryRows(&show)
@@ -127,4 +127,10 @@ func (this *ArticleServiceProvider) Update(title string, article Article) error 
 	raw := o.Raw(sql, values)
 	_, err := raw.Exec()
 	return err
+}
+func (this *ArticleServiceProvider) Get(title string) (Show, error) {
+	var show Show
+	o := orm.NewOrm()
+	err := o.Raw("SELECT * FROM article.article WHERE title=? AND status=?", title, common.NormalArticle).QueryRow(&show)
+	return show, err
 }

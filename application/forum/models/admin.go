@@ -16,8 +16,8 @@ var AdminServer *AdminServiceProvider
 
 type Admin struct {
 	ID   uint64 `orm:"column(id)"`
-	Name string
-	Pass string
+	Name string `orm:"column(name)"   json:"name"       valid:"Required`
+	Pass string `orm:"column(pass)"   json:"pass"		valid:"MaxSize(16);MixSize(6)"`
 }
 
 // 添加管理员用户

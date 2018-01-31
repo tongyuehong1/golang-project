@@ -13,8 +13,8 @@ var AdminServer *AdminServiceProvider
 
 type Manager struct {
 	ID   uint64 `orm:"column(id)"     json:"id"`
-	Name string `orm:"column(name)"   json:"name"`
-	Pass string `orm:"column(pass)"   json:"pass"`
+	Name string `orm:"column(name)"   json:"name"       valid:"Required`
+	Pass string `orm:"column(pass)"   json:"pass"		valid:"MaxSize(16);MixSize(6)"`
 }
 
 func (this *AdminServiceProvider) Create(manager Manager) error {

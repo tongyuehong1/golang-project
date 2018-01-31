@@ -84,6 +84,7 @@ func (this *UserServiceProvider) GetUserId(name string) (uint64, error) {
 
 	return userId, err
 }
+
 func (this *UserServiceProvider) GetLastTime(userid uint64) (time.Time, error) {
 	o := orm.NewOrm()
 	var lasttime time.Time
@@ -99,6 +100,7 @@ func (this *UserServiceProvider) GetLastTime(userid uint64) (time.Time, error) {
 	}
 	return lasttime, err
 }
+
 func (this *UserServiceProvider) InsertTime(userid int64) error {
 	o := orm.NewOrm()
 	lasttime := "2006-01-02 15:04:05"

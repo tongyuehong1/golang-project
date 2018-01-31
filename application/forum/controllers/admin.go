@@ -25,7 +25,13 @@ func (this *AdminController) Create() {
 
 		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
 	} else {
-		err := models.AdminServer.Create(admin)
+		//valid := validation.Validation{}
+		// admin := models.Admin{Name: admin.Name,Pass: admin.Pass}
+		// _, err := valid.Valid(&admin)
+		// if err != nil{
+		// 	logger.Logger.Error("valid:", err)
+		// }
+		err = models.AdminServer.Create(admin)
 
 		if err != nil {
 			logger.Logger.Error("Unmarshal", err)
@@ -54,7 +60,7 @@ func (this *AdminController) Login() {
 
 		if err != nil {
 			if err == orm.ErrNoRows {
-				logger.Logger.Error("Unmarshal ", err)
+				logger.Logger.Error("Nouser ", err)
 				this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidUser}
 			} else {
 				logger.Logger.Error("Unmarshal ", err)

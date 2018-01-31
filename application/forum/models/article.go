@@ -254,7 +254,6 @@ func (this *ArticleServiceProvider) InsertLastTime(userid uint64) (int64, error)
 	var last UserExtra
 	o.Raw("SELECT * FROM forum.userextra WHERE userid=? AND `key`=?", userid, common.KeyLastInsert).QueryRow(&last)
 	last.Value = time.Now().Format("2006-01-02 15:04:05")
-	//var u  UserExtra=UserExtra{Key: common.KeyLastInsert, UserID: userid, Value: time.Now().Format("2006-01-02 15:04:05")}
 	id, err := o.Update(&last, "value")
 	return id, err
 }

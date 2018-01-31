@@ -21,11 +21,17 @@ func (this *AdminController) Create() {
 	err := json.Unmarshal(this.Ctx.Input.RequestBody, &manager)
 
 	if err != nil {
+		//valid := validation.Validation{}
+		// admin := models.Manager{Name: manager.Name,Pass: manager.Pass}
+		// _, err := valid.Valid(&admin)
+		// if err != nil{
+		// 	logger.Logger.Error("valid:", err)
+		// }
 		logger.Logger.Error("Unmarshal:", err)
 
 		this.Data["json"] = map[string]interface{}{common.RespKeyStatus: common.ErrInvalidParam}
 	} else {
-		err := models.AdminServer.Create(manager)
+		err = models.AdminServer.Create(manager)
 
 		if err != nil {
 			logger.Logger.Error("Unmarshal", err)

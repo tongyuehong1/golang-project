@@ -1,0 +1,11 @@
+
+application/music/controllers/default.go
+application/music/main.go
+application/music/routers/router.go
+application/music/static/js/reload.min.js
+application/music/tests/default_test.go
+application/music/views/index.tpl
+.idea/workspace.xml
+.idea/vcs.xml
+.idea/modules.xml
+.idea/golang-project.iml
